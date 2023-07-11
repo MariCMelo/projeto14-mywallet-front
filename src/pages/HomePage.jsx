@@ -1,47 +1,59 @@
 import styled from "styled-components"
 import { BiExit } from "react-icons/bi"
 import { AiOutlineMinusCircle, AiOutlinePlusCircle } from "react-icons/ai"
+import { useContext } from "react"
+import AuthContext from "../context/AuthContext"
+import { useNavigate } from "react-router-dom"
+import { useLogout } from "../services/auth"
+import useUnauthenticated from "../hooks/useUnauthenticated"
 
 export default function HomePage() {
+  const { userName } = useContext(AuthContext)
+  const navigate = useNavigate()
+  const logout = useLogout()
+  useUnauthenticated()
+
+  function calcBalance() {
+    const balance = transactions.reduce((acc, cur) => acc + cur.value, 0);
+    return balance.toFixed(2);
+  }
+
   return (
     <HomeContainer>
       <Header>
-        <h1>Olá, Fulano</h1>
-        <BiExit />
+        <h1>Olá, {userName}</h1>
+        <BiExit onClick={logout} />
       </Header>
 
       <TransactionsContainer>
         <ul>
-          <ListItemContainer>
-            <div>
-              <span>30/11</span>
-              <strong>Almoço mãe</strong>
-            </div>
-            <Value color={"negativo"}>120,00</Value>
-          </ListItemContainer>
-
-          <ListItemContainer>
-            <div>
-              <span>15/11</span>
-              <strong>Salário</strong>
-            </div>
-            <Value color={"positivo"}>3000,00</Value>
-          </ListItemContainer>
+          {transactions.map((transaction, index) => (
+            <ListItemContainer key={index}>
+              <div>
+                <span>{transaction.date}</span>
+                <strong>{transaction.description}</strong>
+              </div>
+              <Value color={transaction.value >= 0 ? "positivo" : "negativo"}>
+                {transaction.value.toFixed(2)}
+              </Value>
+            </ListItemContainer>
+          ))}
         </ul>
-
         <article>
           <strong>Saldo</strong>
-          <Value color={"positivo"}>2880,00</Value>
+          <Value color={calcBalance() >= 0 ? "positivo" : "negativo"}>
+            {calcBalance()}
+          </Value>
         </article>
       </TransactionsContainer>
 
 
       <ButtonsContainer>
-        <button>
+        <button onClick={() => navigate("/nova-transacao/entrada")}>
           <AiOutlinePlusCircle />
           <p>Nova <br /> entrada</p>
         </button>
-        <button>
+        <button onClick={() => navigate("/nova-transacao/saida")}>
           <AiOutlineMinusCircle />
           <p>Nova <br />saída</p>
         </button>
